@@ -1,23 +1,23 @@
 const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
-  titulo: {
+  title: {
     type: String,
     required: [true, 'El título es requerido'],
     trim: true
   },
-  descripcion: {
+  description: {
     type: String,
     required: [true, 'La descripción es requerida'],
     trim: true,
     maxlength: [1000, 'La descripción no puede exceder los 1000 caracteres']
   },
-  categoria: {
+  category: {
     type: String,
     required: [true, 'La categoría es requerida'],
     trim: true
   },
-  precio: {
+  price: {
     type: Number,
     required: [true, 'El precio es requerido'],
     min: [0, 'El precio no puede ser negativo']
@@ -27,43 +27,42 @@ const serviceSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  estado: {
+  status: {
     type: String,
-    enum: ['activo', 'pausado', 'finalizado'],
-    default: 'activo'
+    enum: ['active', 'paused', 'finished'],
+    default: 'active'
   },
-  imagenes: [{
+  images: [{
     type: String
   }],
-  calificaciones: [{
-    usuario: {
+  reviews: [{
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
-    puntuacion: {
+    score: {
       type: Number,
       required: true,
       min: 1,
       max: 5
     },
-    comentario: String,
-    fecha: {
+    comment: String,
+    date: {
       type: Date,
       default: Date.now
     }
   }],
-  promedio_calificacion: {
+  averageRating: {
     type: Number,
     default: 0
   }
 }, {
-  timestamps: true // Añade createdAt y updatedAt
+  timestamps: true
 });
 
-// Middleware para calcular el promedio de calificaciones
 serviceSchema.pre('save', function(next) {
-  if (this.calificaciones.length > 0) {
-    this.promedio_calificacion = this.calificaciones.reduce((acc, curr) => acc + curr.puntuacion, 0) / this.calificaciones.length;
+  if (this.reviews.length > 0) {
+    this.averageRating = this.reviews.reduce((acc, curr) => acc + curr.score, 0) / this.reviews.length;
   }
   next();
 });

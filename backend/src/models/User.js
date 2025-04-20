@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  nombre: {
+  name: {
     type: String,
     required: [true, 'El nombre es requerido'],
     trim: true
@@ -13,52 +13,52 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
-  contraseña: {
+  password: {
     type: String,
     required: [true, 'La contraseña es requerida'],
     minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
   },
-  rol: {
+  role: {
     type: String,
-    enum: ['cliente', 'freelancer', 'admin'],
-    default: 'cliente'
+    enum: ['client', 'freelancer', 'admin'],
+    default: 'client'
   },
   avatar: {
     type: String,
     default: ''
   },
-  biografia: {
+  biography: {
     type: String,
     trim: true,
     maxlength: [500, 'La biografía no puede exceder los 500 caracteres']
   },
-  portafolio: [{
+  portfolio: [{
     type: String
   }],
-  calificacion: {
+  rating: {
     type: Number,
     default: 0,
     min: 0,
     max: 5
   },
-  autenticacion_social: {
+  socialAuth: {
     type: String,
     default: null
   },
-  fecha_registro: {
+  registrationDate: {
     type: Date,
     default: Date.now
   },
-  servicios_publicados: [{
+  publishedServices: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service'
   }],
-  servicios_contratados: [{
+  hiredServices: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service'
   }]
 }, {
-  timestamps: true // Añade createdAt y updatedAt
+  timestamps: true
 });
 
 module.exports = mongoose.model('User', userSchema);

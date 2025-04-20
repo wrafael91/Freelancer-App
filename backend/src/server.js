@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const authRoutes = require('./routes/authRoutes'); // Importa las rutas de autenticación
 
 dotenv.config();
 
@@ -20,9 +21,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Conectado a MongoDB Atlas'))
   .catch(err => console.error('Error de conexión:', err));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API funcionando correctamente' });
-});
+// Usa las rutas de autenticación
+app.use('/api/auth', authRoutes);
 
 // Define el puerto
 const PORT = process.env.PORT || 5000;
