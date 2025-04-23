@@ -16,6 +16,10 @@ app.use(cors({
   credentials: true
 }));
 
+// importar rutas
+const serviceRoutes = require('./routes/serviceRoutes');
+app.use('/api/services', serviceRoutes);
+
 // Conectar a MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Conectado a MongoDB Atlas'))
