@@ -46,13 +46,25 @@ app.use('/api/services', serviceRoutes);
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
+  // Cuando un usuario se une al chat
+  socket.on('join chat', (username) => {
+    socket.username = username; // Guardamos el nombre de usuario en el socket
+    console.log(`${username} se ha unido al chat`);
+  });
+
   socket.on('disconnect', () => {
-    console.log('Usuario desconectado:', socket.id);
+    console.log('Usuario desconectado:', socket.username || socket.id);
   });
 
   socket.on('chat message', (msg) => {
-    console.log('Mensaje:', msg);
-    io.emit('chat message', msg);
+    const messageData = {
+      text: msg,
+      username: socket.username || 'Anónimo',
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    console.log('Mensaje recibido:', messageData);
+    io.emit('chat message', messageData);
   });
 });
 
