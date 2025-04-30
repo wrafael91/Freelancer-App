@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 
 const Register = () => {
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -14,7 +14,7 @@ const Register = () => {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({ name, email, password }),
         });
         const data = await response.json();
         if (response.ok) {
@@ -26,7 +26,7 @@ const Register = () => {
       } catch (error) {
         alert('Error de red');
       }
-    console.log('Register:', { username, email, password });
+    console.log('Register:', { name, email, password });
   };
 
   return (
@@ -40,8 +40,8 @@ const Register = () => {
             label="Nombre de Usuario"
             fullWidth
             margin="normal"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
           />
           <TextField
