@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
     }
     // Emite la lista actualizada a todos
     io.emit('users list', connectedUsers);
-    
+
     socket.broadcast.emit('system message', {
       text: `${username} se ha unido al chat`,
       timestamp: new Date().toLocaleTimeString()
@@ -85,6 +85,16 @@ io.on('connection', (socket) => {
     
     console.log('Mensaje recibido:', messageData);
     io.emit('chat message', messageData);
+  });
+
+  // Un usuario está escribiendo
+  socket.on('typing', () => {
+    socket.broadcast.emit('typing', socket.username);
+  });
+
+  // Un usuario deja de escribir
+  socket.on('stop typing', () => {
+    socket.broadcast.emit('stop typing', socket.username);
   });
 });
 

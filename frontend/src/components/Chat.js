@@ -21,6 +21,8 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [users, setUsers] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
+  let typingTimeout = null;
 
   useEffect(() => {
     // Crear la conexión
@@ -54,6 +56,21 @@ const Chat = () => {
       setUsers(usersList);
     });
 
+    // Detectar cuando otro usuario está escribiendo
+    newSocket.on('typing', (user) => {
+      setTypingUsers(prev => {
+        if (!prev.includes(user)) {
+          return [...prev, user];
+        }
+        return prev;
+      });
+    });
+
+    // Detectar cuando otro usuario deja de escribir
+    newSocket.on('stop typing', (user) => {
+      setTypingUsers(prev => prev.filter(u => u !== user));
+    });
+
     // Guardar el socket en el estado
     setSocket(newSocket);
 
@@ -65,11 +82,19 @@ const Chat = () => {
 
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
+    if (socket && isConnected) {
+      socket.emit('typing');
+      if (typingTimeout) clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('stop typing');
+      }, 1000); // 1 segundo sin escribir
+    }
   };
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== '' && socket && isConnected) {
       socket.emit('chat message', newMessage);
+      socket.emit('stop typing');
       setNewMessage('');
     }
   };
@@ -182,6 +207,11 @@ const Chat = () => {
           </Button>
         </Box>
       </Paper>
+      {typingUsers.length > 0 && (
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+          {typingUsers.join(', ')} {typingUsers.length === 1 ? 'está escribiendo...' : 'están escribiendo...'}
+        </Typography>
+      )}
     </Box>
   );
 };
