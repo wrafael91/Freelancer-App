@@ -42,6 +42,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
 
+let connectedUsers = [];
+
 // Configuración de Socket.IO
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
@@ -49,6 +51,13 @@ io.on('connection', (socket) => {
   // Cuando un usuario se une al chat
   socket.on('join chat', (username) => {
     socket.username = username; // Guardamos el nombre de usuario en el socket
+    // Agrega el usuario si no está ya en la lista
+    if (!connectedUsers.includes(username)) {
+      connectedUsers.push(username);
+    }
+    // Emite la lista actualizada a todos
+    io.emit('users list', connectedUsers);
+    
     socket.broadcast.emit('system message', {
       text: `${username} se ha unido al chat`,
       timestamp: new Date().toLocaleTimeString()

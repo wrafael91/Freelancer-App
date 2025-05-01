@@ -20,10 +20,11 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     // Crear la conexión
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io(process.env.REACT_APP_API_URL, {
       transports: ['websocket']
     });
 
@@ -46,6 +47,11 @@ const Chat = () => {
 
     newSocket.on('system message', (messageData) => {
       setMessages(prevMessages => [...prevMessages, {...messageData, type: 'system'}]);
+    });
+
+    //lista de usuarios conectados
+    newSocket.on('users list', (usersList) => {
+      setUsers(usersList);
     });
 
     // Guardar el socket en el estado
@@ -77,6 +83,27 @@ const Chat = () => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper', margin: 'auto', padding: 2 }}>
+      <Paper elevation={1} sx={{ padding: 1, marginBottom: 2 }}>
+        <Typography variant="subtitle2" gutterBottom>
+          Usuarios conectados ({users.length}):
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {users.map((user, idx) => (
+            <Typography 
+              key={idx} 
+              variant="body2" 
+              sx={{ 
+                backgroundColor: user === username ? '#90caf9' : '#e0e0e0', 
+                borderRadius: 1, 
+                px: 1, 
+                py: 0.5 
+              }}
+            >
+              {user}
+            </Typography>
+          ))}
+        </Box>
+      </Paper>
       <Paper elevation={3} sx={{ padding: 2 }}>
         <Typography variant="h5" gutterBottom>
           Chat en tiempo real
