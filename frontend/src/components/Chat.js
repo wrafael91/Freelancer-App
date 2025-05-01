@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import {jwtDecode} from 'jwt-decode';
 import io from 'socket.io-client';
 import { TextField, Button, List, ListItem, ListItemText, Box, Paper, Typography } from '@mui/material';
 
 const Chat = () => {
+
+  const token = localStorage.getItem('token');
+  let username = 'Anónimo';
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      username = decoded.user.name || 'Anónimo';
+    } catch (e) {
+      // Si el token no es válido, mantenemos 'Anónimo'
+    }
+  }
+
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [username, setUsername] = useState('Usuario' + Math.floor(Math.random() * 1000));
 
   useEffect(() => {
     // Crear la conexión
