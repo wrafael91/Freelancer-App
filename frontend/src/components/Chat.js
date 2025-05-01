@@ -41,7 +41,11 @@ const Chat = () => {
 
     // Eventos de mensajes
     newSocket.on('chat message', (messageData) => {
-      setMessages(prevMessages => [...prevMessages, messageData]);
+      setMessages(prevMessages => [...prevMessages, {...messageData, type: 'user'}]);
+    });
+
+    newSocket.on('system message', (messageData) => {
+      setMessages(prevMessages => [...prevMessages, {...messageData, type: 'system'}]);
     });
 
     // Guardar el socket en el estado
@@ -94,28 +98,40 @@ const Chat = () => {
         }}>
           <List>
             {messages.map((msg, index) => (
-              <ListItem 
-                key={index}
-                sx={{
-                  backgroundColor: msg.username === username ? '#e3f2fd' : 'white',
-                  borderRadius: 1,
-                  marginBottom: 1,
-                  padding: 1
-                }}
-              >
-                <ListItemText
-                  primary={
-                    <Typography variant="body1">
-                      {msg.text}
-                    </Typography>
-                  }
-                  secondary={
-                    <Typography variant="caption">
-                      {msg.username} - {msg.timestamp}
-                    </Typography>
-                  }
-                />
-              </ListItem>
+              msg.type === 'system' ? (
+                <ListItem key={index} sx={{ justifyContent: 'center' }}>
+                  <ListItemText
+                    primary={
+                      <Typography variant="caption" color="text.secondary" align="center">
+                        {msg.text} ({msg.timestamp})
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ) : (
+                <ListItem 
+                  key={index}
+                  sx={{
+                    backgroundColor: msg.username === username ? '#e3f2fd' : 'white',
+                    borderRadius: 1,
+                    marginBottom: 1,
+                    padding: 1
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      <Typography variant="body1">
+                        {msg.text}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="caption">
+                        {msg.username} - {msg.timestamp}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              )
             ))}
           </List>
         </Paper>

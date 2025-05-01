@@ -49,10 +49,21 @@ io.on('connection', (socket) => {
   // Cuando un usuario se une al chat
   socket.on('join chat', (username) => {
     socket.username = username; // Guardamos el nombre de usuario en el socket
+    socket.broadcast.emit('system message', {
+      text: `${username} se ha unido al chat`,
+      timestamp: new Date().toLocaleTimeString()
+    });
     console.log(`${username} se ha unido al chat`);
   });
 
   socket.on('disconnect', () => {
+    if (socket.username) {
+      // Mensaje de sistema para todos menos el que se desconecta
+      socket.broadcast.emit('system message', {
+        text: `${socket.username} ha abandonado el chat`,
+        timestamp: new Date().toLocaleTimeString()
+      });
+    }
     console.log('Usuario desconectado:', socket.username || socket.id);
   });
 
@@ -67,6 +78,8 @@ io.on('connection', (socket) => {
     io.emit('chat message', messageData);
   });
 });
+
+
 
 // Define el puerto
 const PORT = process.env.PORT || 5000;
