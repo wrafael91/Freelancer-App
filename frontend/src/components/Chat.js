@@ -2,8 +2,16 @@ import React, { useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import io from 'socket.io-client';
 import { TextField, Button, List, ListItem, ListItemText, Box, Paper, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Chat = () => {
+
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const token = localStorage.getItem('token');
   let username = 'Anónimo';
@@ -108,9 +116,14 @@ const Chat = () => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper', margin: 'auto', padding: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button variant="outlined" color="error" onClick={handleSignOut}>
+          Sign out
+        </Button>
+      </Box>
       <Paper elevation={1} sx={{ padding: 1, marginBottom: 2 }}>
         <Typography variant="subtitle2" gutterBottom>
-          Usuarios conectados ({users.length}):
+          Connected users ({users.length}):
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {users.map((user, idx) => (
@@ -131,14 +144,14 @@ const Chat = () => {
       </Paper>
       <Paper elevation={3} sx={{ padding: 2 }}>
         <Typography variant="h5" gutterBottom>
-          Chat en tiempo real
+          Chat
         </Typography>
         <Box sx={{ marginBottom: 2 }}>
           <Typography variant="body2">
-            Estado: {isConnected ? '🟢 Conectado' : '🔴 Desconectado'}
+            Status: {isConnected ? '🟢 Conectado' : '🔴 Desconectado'}
           </Typography>
           <Typography variant="body2">
-            Usuario: {username}
+            User: {username}
           </Typography>
         </Box>
         <Paper sx={{ 
@@ -189,7 +202,7 @@ const Chat = () => {
         </Paper>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
-            label="Mensaje"
+            label="Message"
             variant="outlined"
             size="small"
             fullWidth
@@ -203,7 +216,7 @@ const Chat = () => {
             onClick={handleSendMessage} 
             disabled={!isConnected}
           >
-            Enviar
+            Send
           </Button>
         </Box>
       </Paper>

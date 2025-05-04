@@ -19,14 +19,14 @@ const Login = () => {
         if (response.ok) {
           // Guarda el token en localStorage
           localStorage.setItem('token', data.token);
-          alert('¡Inicio de sesión exitoso!');
+          alert('Successfully logged in!');
           // Redirige al chat
           window.location.href = '/';
         } else {
-          alert(data.message || 'Error al iniciar sesión');
+          alert(data.message || 'Login error');
         }
       } catch (error) {
-        alert('Error de red');
+        alert('Network error');
       }
     console.log('Login:', { email, password });
   };
@@ -35,11 +35,11 @@ const Login = () => {
     <Box sx={{ width: '100%', maxWidth: 400, margin: 'auto', mt: 4 }}>
       <Paper elevation={3} sx={{ padding: 3 }}>
         <Typography variant="h5" align="center" mb={3}>
-          Iniciar Sesión
+          Sign in
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Correo Electrónico"
+            label="Email"
             type="email"
             fullWidth
             margin="normal"
@@ -48,7 +48,7 @@ const Login = () => {
             required
           />
           <TextField
-            label="Contraseña"
+            label="Password"
             type="password"
             fullWidth
             margin="normal"
@@ -62,10 +62,10 @@ const Login = () => {
             fullWidth
             sx={{ mt: 3 }}
           >
-            Iniciar Sesión
+            Login
           </Button>
           <Typography align="center" sx={{ mt: 2 }}>
-            ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
+            Don't have an account? <Link to="/register">Register here</Link>
           </Typography>
         </form>
       </Paper>
