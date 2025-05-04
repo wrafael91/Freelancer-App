@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 // Middleware para verificar el token JWT
 module.exports = function(req, res, next) {
   // Obtiene el token del header
-  const token = req.header('x-auth-token');
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
   // Verifica si no hay token
   if (!token) {
