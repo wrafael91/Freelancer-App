@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  CardActions, 
-  Button, 
-  Grid,
-  IconButton
-} from '@mui/material';
+import { Box, Typography, Card, CardContent, CardActions, Button, Grid, IconButton} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
@@ -72,7 +63,7 @@ const ServiceList = () => {
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
         <Typography variant="h5">Services</Typography>
         <Button 
@@ -85,37 +76,40 @@ const ServiceList = () => {
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} justifyContent="center">
         {services.map((service) => (
           <Grid item xs={12} sm={6} md={4} key={service._id}>
             <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {service.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {service.description}
-                </Typography>
-                <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
-                  ${service.price}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <IconButton 
-                  component={Link} 
-                  to={`/services/edit/${service._id}`}
-                  color="primary"
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton 
-                  onClick={() => handleDelete(service._id)}
-                  color="error"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </CardActions>
-            </Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                {service.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {service.description}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Categoría: {service.category}
+              </Typography>
+              <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
+                ${service.price}
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <IconButton 
+                component={Link} 
+                to={`/services/edit/${service._id}`}
+                color="primary"
+              >
+                <EditIcon />
+              </IconButton>
+              <IconButton 
+                onClick={() => handleDelete(service._id)}
+                color="error"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </CardActions>
+          </Card>
           </Grid>
         ))}
       </Grid>
