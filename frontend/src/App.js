@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import Navbar from './components/Navbar';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import Chat from './components/Chat';
@@ -17,6 +18,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <Navbar />
         <Routes>
           <Route path="/" element={
             <PrivateRoute>

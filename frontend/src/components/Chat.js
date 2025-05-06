@@ -2,16 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import io from 'socket.io-client';
 import { TextField, Button, List, ListItem, ListItemText, Box, Paper, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+
 
 const Chat = () => {
-
-  const navigate = useNavigate();
-
-  const handleSignOut = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
   const token = localStorage.getItem('token');
   let username = 'Anónimo';
@@ -115,11 +108,8 @@ const Chat = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper', margin: 'auto', padding: 2 }}>
+    <Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper', margin: 'auto', padding: '0 16px', marginTop: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button variant="outlined" color="error" onClick={handleSignOut}>
-          Sign out
-        </Button>
       </Box>
       <Paper elevation={1} sx={{ padding: 1, marginBottom: 2 }}>
         <Typography variant="subtitle2" gutterBottom>

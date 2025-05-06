@@ -18,13 +18,13 @@ const Register = () => {
         });
         const data = await response.json();
         if (response.ok) {
-          alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+          alert('Account created! You can now log in.');
           window.location.href = '/login';
         } else {
-          alert(data.message || 'Error al registrarse');
+          alert(data.message || 'Registration failed');
         }
       } catch (error) {
-        alert('Error de red');
+        alert('Network error');
       }
     console.log('Register:', { name, email, password });
   };
@@ -33,11 +33,11 @@ const Register = () => {
     <Box sx={{ width: '100%', maxWidth: 400, margin: 'auto', mt: 4 }}>
       <Paper elevation={3} sx={{ padding: 3 }}>
         <Typography variant="h5" align="center" mb={3}>
-          Registrarse
+          Register
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Nombre de Usuario"
+            label="Username"
             fullWidth
             margin="normal"
             value={name}
@@ -45,7 +45,7 @@ const Register = () => {
             required
           />
           <TextField
-            label="Correo Electrónico"
+            label="Email"
             type="email"
             fullWidth
             margin="normal"
@@ -54,7 +54,7 @@ const Register = () => {
             required
           />
           <TextField
-            label="Contraseña"
+            label="Password"
             type="password"
             fullWidth
             margin="normal"
@@ -68,10 +68,10 @@ const Register = () => {
             fullWidth
             sx={{ mt: 3 }}
           >
-            Registrarse
+            Register
           </Button>
           <Typography align="center" sx={{ mt: 2 }}>
-            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+            ¿Do you have an account? <Link to="/login">Login</Link>
           </Typography>
         </form>
       </Paper>
