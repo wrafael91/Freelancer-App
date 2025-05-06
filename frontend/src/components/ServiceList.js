@@ -92,6 +92,7 @@ const ServiceList = () => {
             to={`/services/edit/${service._id}`}
             edge="end" 
             aria-label="edit"
+            sx={{ marginRight: 1 }}
           >
             <EditIcon />
           </IconButton>
@@ -99,6 +100,7 @@ const ServiceList = () => {
             onClick={() => handleDelete(service._id)}
             edge="end"
             aria-label="delete"
+            color="error"
           >
             <DeleteIcon />
           </IconButton>
