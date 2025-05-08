@@ -1,9 +1,33 @@
 const Service = require('../models/Service');
 
-// Obtener todos los servicios
+// Modificar getServices para manejar el filtro por userId
 exports.getServices = async (req, res) => {
   try {
-    const services = await Service.find().populate('freelancer', 'name avatar');
+    const query = {};
+    
+    // Si hay un userId en la query, filtrar por ese freelancer
+    if (req.query.userId) {
+      query.freelancer = req.query.userId;
+    }
+
+    const services = await Service.find(query)
+      .populate('freelancer', 'name avatar')
+      .sort({ createdAt: -1 });
+    
+    res.json(services);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Error del servidor');
+  }
+};
+
+// Añadir el nuevo controlador para obtener servicios propios
+exports.getMyServices = async (req, res) => {
+  try {
+    const services = await Service.find({ freelancer: req.user.id })
+      .populate('freelancer', 'name avatar')
+      .sort({ createdAt: -1 });
+
     res.json(services);
   } catch (err) {
     console.error(err.message);

@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 // Middleware para verificar el token JWT
-module.exports = function(req, res, next) {
+module.exports = async (req, res, next) => {
   // Obtiene el token del header
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
