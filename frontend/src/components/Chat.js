@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import io from 'socket.io-client';
+import UserProfile from './UserProfile';
 import { TextField, Button, List, ListItem, ListItemText, Box, Paper, Typography } from '@mui/material';
 
 
@@ -8,10 +9,12 @@ const Chat = () => {
 
   const token = localStorage.getItem('token');
   let username = 'Anónimo';
+  let userId = null;
   if (token) {
-    try {
+      try {
       const decoded = jwtDecode(token);
       username = decoded.user.name || 'Anónimo';
+      userId = decoded.user.id;
     } catch (e) {
       // Si el token no es válido, mantenemos 'Anónimo'
     }
@@ -23,6 +26,7 @@ const Chat = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [users, setUsers] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   let typingTimeout = null;
 
   useEffect(() => {
@@ -35,7 +39,7 @@ const Chat = () => {
     newSocket.on('connect', () => {
       console.log('Conectado al servidor');
       setIsConnected(true);
-      newSocket.emit('join chat', username); // Enviamos el nombre de usuario al servidor
+      newSocket.emit('join chat', {username, userId}); // Enviamos el nombre de usuario al servidor
     });
 
     newSocket.on('disconnect', () => {
@@ -79,7 +83,7 @@ const Chat = () => {
     return () => {
       newSocket.close();
     };
-  }, [username]); // Solo se ejecuta una vez al montar el componente
+  }, [username, userId]); // Solo se ejecuta una vez al montar el componente
 
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
@@ -107,6 +111,10 @@ const Chat = () => {
     }
   };
 
+  const handleUserClick = (userId) => {
+    setSelectedUserId(userId);
+  };  
+
   return (
     <Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper', margin: 'auto', padding: '0 16px', marginTop: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -117,18 +125,23 @@ const Chat = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {users.map((user, idx) => (
-            <Typography 
-              key={idx} 
-              variant="body2" 
-              sx={{ 
-                backgroundColor: user === username ? '#90caf9' : '#e0e0e0', 
-                borderRadius: 1, 
-                px: 1, 
-                py: 0.5 
+            <Button
+              key={user.userId || idx}
+              onClick={() => setSelectedUserId(user.userId)}
+              sx={{
+                backgroundColor: user.username === username ? '#90caf9' : '#e0e0e0',
+                borderRadius: 1,
+                px: 1,
+                py: 0.5,
+                textTransform: 'none',
+                minWidth: 0,
+                '&:hover': {
+                  backgroundColor: user === username ? '#82b1dc' : '#d0d0d0',
+                }
               }}
             >
-              {user}
-            </Typography>
+              {user.username}
+            </Button>
           ))}
         </Box>
       </Paper>
@@ -138,7 +151,7 @@ const Chat = () => {
         </Typography>
         <Box sx={{ marginBottom: 2 }}>
           <Typography variant="body2">
-            Status: {isConnected ? '🟢 Conectado' : '🔴 Desconectado'}
+            Status: {isConnected ? '🟢 Online' : '🔴 Offline'}
           </Typography>
           <Typography variant="body2">
             User: {username}
@@ -180,9 +193,21 @@ const Chat = () => {
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="caption">
-                        {msg.username} - {msg.timestamp}
-                      </Typography>
+                      <Box component="span">
+                        <Button
+                          onClick={() => setSelectedUserId(msg.userId)}
+                          sx={{
+                            textTransform: 'none',
+                            padding: '0',
+                            minWidth: 'auto',
+                            fontSize: '0.875rem',
+                            color: 'text.secondary'
+                          }}
+                        >
+                          {msg.username}
+                        </Button>
+                        {` - ${msg.timestamp}`}
+                      </Box>
                     }
                   />
                 </ListItem>
@@ -210,6 +235,11 @@ const Chat = () => {
           </Button>
         </Box>
       </Paper>
+      <UserProfile
+        userId={selectedUserId}
+        open={Boolean(selectedUserId)}
+        onClose={() => setSelectedUserId(null)}
+      />
       {typingUsers.length > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
           {typingUsers.join(', ')} {typingUsers.length === 1 ? 'está escribiendo...' : 'están escribiendo...'}

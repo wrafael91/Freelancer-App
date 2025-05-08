@@ -41,6 +41,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // Usa las rutas de autenticación
 app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/users', require('./routes/users'));
 
 let connectedUsers = [];
 
@@ -49,27 +50,41 @@ io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
   // Cuando un usuario se une al chat
-  socket.on('join chat', (username) => {
-    socket.username = username; // Guardamos el nombre de usuario en el socket
-    // Agrega el usuario si no está ya en la lista
-    if (!connectedUsers.includes(username)) {
-      connectedUsers.push(username);
+  socket.on('join chat', (userData) => {
+    // Guardamos tanto el username como el userId en el socket
+    socket.username = userData.username;
+    socket.userId = userData.userId;
+
+    // Agregamos el usuario si no está ya en la lista
+    const existingUser = connectedUsers.find(user => user.userId === userData.userId);
+    if (!existingUser) {
+      connectedUsers.push({
+        username: userData.username,
+        userId: userData.userId
+      });
     }
+
     // Emite la lista actualizada a todos
     io.emit('users list', connectedUsers);
 
     socket.broadcast.emit('system message', {
-      text: `${username} se ha unido al chat`,
+      text: `${userData.username} has joined the chat`,
       timestamp: new Date().toLocaleTimeString()
     });
-    console.log(`${username} se ha unido al chat`);
+    console.log(`${userData.username} has joined the chat`);
   });
 
   socket.on('disconnect', () => {
     if (socket.username) {
+      // Eliminar usuario de la lista de conectados
+      connectedUsers = connectedUsers.filter(user => user.userId !== socket.userId);
+      
+      // Emitir lista actualizada
+      io.emit('users list', connectedUsers);
+
       // Mensaje de sistema para todos menos el que se desconecta
       socket.broadcast.emit('system message', {
-        text: `${socket.username} ha abandonado el chat`,
+        text: `${socket.username} left the chat`,
         timestamp: new Date().toLocaleTimeString()
       });
     }
@@ -80,6 +95,7 @@ io.on('connection', (socket) => {
     const messageData = {
       text: msg,
       username: socket.username || 'Anónimo',
+      userId: socket.userId, // Incluimos el userId en los mensajes
       timestamp: new Date().toLocaleTimeString()
     };
     
