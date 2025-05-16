@@ -14,16 +14,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const ServiceForm = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Para edición
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    category: '', // Agregado category al estado inicial
     price: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Si hay ID, cargar el servicio para edición
   useEffect(() => {
     if (id) {
       const fetchService = async () => {
@@ -36,11 +36,16 @@ const ServiceForm = () => {
           });
           
           if (!response.ok) {
-            throw new Error('Error fetching service');
+            throw new Error('Error loading service');
           }
 
           const data = await response.json();
-          setFormData(data);
+          setFormData({
+            title: data.title || '',
+            description: data.description || '',
+            category: data.category || '',
+            price: data.price || ''
+          });
         } catch (err) {
           setError('Error loading service');
         }
@@ -65,6 +70,18 @@ const ServiceForm = () => {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Validar que todos los campos requeridos estén llenos
+      if (!formData.title || !formData.description || !formData.category || !formData.price) {
+        throw new Error('All fields are required');
+      }
+
+      // Asegurarse de que el precio sea un número
+      const serviceData = {
+        ...formData,
+        price: Number(formData.price)
+      };
+
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/services${id ? `/${id}` : ''}`,
         {
@@ -73,17 +90,19 @@ const ServiceForm = () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(serviceData)
         }
       );
 
       if (!response.ok) {
-        throw new Error('Error saving service');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error saving service');
       }
 
+      // Si todo sale bien, navegar a la lista de servicios
       navigate('/services');
     } catch (err) {
-      setError('Error saving service');
+      setError(err.message || 'Error saving service');
     } finally {
       setLoading(false);
     }
@@ -93,7 +112,7 @@ const ServiceForm = () => {
     <Box sx={{ padding: 3 }}>
       <Paper elevation={3} sx={{ padding: 3, maxWidth: 600, margin: 'auto' }}>
         <Typography variant="h5" gutterBottom>
-          {id ? 'Edit Service' : 'Create New Service'}
+          {id ? 'Edit service' : 'Create new service'}
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -118,15 +137,17 @@ const ServiceForm = () => {
             multiline
             rows={4}
           />
+
           <TextField
             name="category"
             label="Category"
-            value={formData.category || ''}
+            value={formData.category}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
           />
+
           <FormControl fullWidth margin="normal">
             <InputLabel htmlFor="price">Price</InputLabel>
             <OutlinedInput
@@ -154,7 +175,7 @@ const ServiceForm = () => {
               color="primary"
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Save Service'}
+              {loading ? 'Saving...' : 'Save service'}
             </Button>
             <Button
               variant="outlined"

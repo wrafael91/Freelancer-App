@@ -78,6 +78,14 @@ exports.createService = async (req, res) => {
 // Actualizar un servicio
 exports.updateService = async (req, res) => {
   try {
+
+    console.log('==== Creación de Servicio ====');
+    console.log('Token recibido:', req.header('Authorization'));
+    console.log('Usuario autenticado:', {
+      id: req.user.id,
+      name: req.user.name
+    });
+    
     const { title, description, category, price } = req.body;
 
     let service = await Service.findById(req.params.id);
@@ -110,27 +118,34 @@ exports.updateService = async (req, res) => {
 
 // Eliminar un servicio
 exports.deleteService = async (req, res) => {
-    try {
-      const service = await Service.findById(req.params.id);
-  
-      if (!service) {
-        return res.status(404).json({ message: 'Servicio no encontrado' });
-      }
-  
-      // Verifica si el usuario es el dueño del servicio
-      if (service.freelancer.toString() !== req.user.id) {
-        return res.status(401).json({ message: 'No autorizado' });
-      }
-  
-      // Cambiamos service.remove() por deleteOne()
-      await Service.deleteOne({ _id: req.params.id });
-  
-      res.json({ message: 'Servicio eliminado' });
-    } catch (err) {
-      console.error(err.message);
-      if (err.kind === 'ObjectId') {
-        return res.status(404).json({ message: 'Servicio no encontrado' });
-      }
-      res.status(500).send('Error del servidor');
+  try {
+    console.log('==== Eliminando Servicio ====');
+    console.log('ID del servicio:', req.params.id);
+    console.log('Usuario autenticado:', req.user);
+
+    const service = await Service.findById(req.params.id);
+    
+    if (!service) {
+      console.log('Servicio no encontrado');
+      return res.status(404).json({ message: 'Servicio no encontrado' });
     }
-  };
+
+    console.log('Servicio encontrado:', service);
+    console.log('ID del freelancer del servicio:', service.freelancer);
+    console.log('ID del usuario que intenta eliminar:', req.user.id);
+
+    // Verifica si el usuario es el dueño del servicio
+    if (service.freelancer.toString() !== req.user.id) {
+      console.log('Usuario no autorizado para eliminar este servicio');
+      return res.status(401).json({ message: 'No autorizado para eliminar este servicio' });
+    }
+
+    await Service.deleteOne({ _id: req.params.id });
+    console.log('Servicio eliminado exitosamente');
+    
+    res.json({ message: 'Servicio eliminado exitosamente' });
+  } catch (err) {
+    console.error('Error al eliminar servicio:', err);
+    res.status(500).json({ message: 'Error al eliminar el servicio', error: err.message });
+  }
+};

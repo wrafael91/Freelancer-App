@@ -38,26 +38,34 @@ const ServiceList = () => {
 
   // Eliminar un servicio
   const handleDelete = async (serviceId) => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/services/${serviceId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Error deleting service');
+  if (window.confirm('Are you sure you want to delete the service?')) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
+      });
 
-        setServices(services.filter(service => service._id !== serviceId));
-      } catch (err) {
-        setError('Error deleting service');
+      // Obtener el mensaje de error del servidor si existe
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error deleting service');
       }
+
+      // Si la eliminación fue exitosa
+      setServices(services.filter(service => service._id !== serviceId));
+      // Opcional: Mostrar mensaje de éxito
+      alert('Service eliminated');
+      
+    } catch (err) {
+      console.error('Error completo:', err);
+      setError(err.message || 'Error deleting service');
     }
-  };
+  }
+};
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;
