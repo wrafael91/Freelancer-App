@@ -53,7 +53,7 @@ const UserProfile = ({ userId, open, onClose }) => {
         ) : user ? (
           <>
             <Typography variant="h5" component="h2" gutterBottom>
-              Perfil de {user.name}
+              Profile {user.name}
             </Typography>
             
             <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -61,7 +61,7 @@ const UserProfile = ({ userId, open, onClose }) => {
             </Typography>
 
             <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-              Servicios ofrecidos
+              Services offered
             </Typography>
             
             {services.length > 0 ? (
