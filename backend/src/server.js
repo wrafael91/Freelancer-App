@@ -33,10 +33,27 @@ app.use(cors({
 }));
 
 
-// Conectar a MongoDB
+// Conectar a MongoDB (en Docker: mongodb://usuario:clave@mongo:27017/...)
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('Conectado a MongoDB Atlas'))
-.catch(err => console.error('Error de conexión:', err));
+.then(() => console.log(`Conectado a MongoDB en ${mongoose.connection.host}:${mongoose.connection.port}`))
+.catch(err => console.error('Error de conexión a MongoDB:', err.message));
+
+// Health check: muestra si el backend alcanza a Mongo y por qué host lo hace
+app.get('/api/health', async (req, res) => {
+  const estados = ['desconectado', 'conectado', 'conectando', 'desconectando'];
+  const estado = estados[mongoose.connection.readyState] || 'desconocido';
+  let ping = false;
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.admin().ping();
+      ping = true;
+    }
+  } catch (_) { /* ping fallido */ }
+  res.status(ping ? 200 : 503).json({
+    status: ping ? 'ok' : 'error',
+    db: { estado, host: mongoose.connection.host, puerto: mongoose.connection.port, ping }
+  });
+});
 
 // Usa las rutas de autenticación
 app.use('/api/auth', authRoutes);
