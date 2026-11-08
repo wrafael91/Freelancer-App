@@ -1,0 +1,59 @@
+# Freelancer-App — Entrega 1 (Integración Continua)
+# Dos contenedores comunicados por nombre de servicio dentro de una red propia.
+#   backend  -> API Express (contenedor 1)
+#   mongo    -> base de datos MongoDB (contenedor 2)
+# Levantar todo:  docker compose up -d --build
+
+name: freelancer-app
+
+services:
+  mongo:
+    image: mongo:7.0.14
+    container_name: freelancer-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - freelancer-net
+    # Sin "ports": Mongo NO se publica al host. Solo el backend lo alcanza
+    # por la red interna usando el nombre de servicio "mongo".
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: freelancer-app-backend:1.0.0
+    container_name: freelancer-backend
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+      # "mongo" es el NOMBRE DEL SERVICIO: Docker lo resuelve por DNS en freelancer-net
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - freelancer-net
+
+networks:
+  freelancer-net:
+    name: freelancer-net
+    driver: bridge
+
+volumes:
+  mongo-data:
+    name: freelancer-mongo-data

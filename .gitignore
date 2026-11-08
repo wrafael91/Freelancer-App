@@ -1,0 +1,15 @@
+# Variables de entorno (secretos). Solo se versiona .env.example
+.env
+.env.*
+!.env.example
+
+# Dependencias y artefactos
+node_modules/
+coverage/
+*.log
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
