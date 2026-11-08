@@ -1,0 +1,43 @@
+name: Docker CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Construir imágenes y probar comunicación
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Crear .env de CI a partir de .env.example
+        # Valores de prueba generados en el runner; ningún secreto real vive en el repo
+        run: |
+          cp .env.example .env
+          sed -i "s/^MONGO_PASSWORD=.*/MONGO_PASSWORD=ci_$(openssl rand -hex 8)/" .env
+          sed -i "s/^JWT_SECRET=.*/JWT_SECRET=ci_$(openssl rand -hex 16)/" .env
+
+      - name: Construir imagen del backend (docker build)
+        run: docker build -t freelancer-app-backend:ci ./backend
+
+      - name: Construir y levantar servicios (docker compose)
+        run: docker compose up -d --build --wait --wait-timeout 120
+
+      - name: Estado de los contenedores
+        run: docker compose ps
+
+      - name: Prueba de comunicación (ida y vuelta)
+        run: bash scripts/prueba-comunicacion.sh
+
+      - name: Logs si algo falla
+        if: failure()
+        run: docker compose logs
+
+      - name: Apagar servicios
+        if: always()
+        run: docker compose down -v
