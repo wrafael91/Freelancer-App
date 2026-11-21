@@ -1,0 +1,37 @@
+# Jenkins local para la Entrega 2 (Integración Continua)
+# Levantar:   docker compose -f jenkins/docker-compose.yml up -d --build
+# Interfaz:   http://localhost:8080
+#
+# Este compose es independiente del de la aplicación (raíz del repo).
+# Jenkins NO corre Docker adentro: usa el motor de Docker Desktop a través
+# del socket montado (patrón "Docker outside of Docker").
+
+name: jenkins-ci
+
+services:
+  jenkins:
+    build: .
+    image: freelancer-jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"      # Interfaz web de Jenkins
+      # 50000 (agentes JNLP) no se publica: todo corre en el nodo integrado
+    environment:
+      JAVA_OPTS: "-Xmx1g -Duser.timezone=America/Bogota"
+    volumes:
+      - jenkins_home:/var/jenkins_home                 # configuración, jobs, credenciales e historial
+      - /var/run/docker.sock:/var/run/docker.sock      # acceso al motor de Docker Desktop
+    group_add:
+      # Grupo dueño del socket. En Docker Desktop suele ser 0 (root).
+      # Si "docker ps" dentro de Jenkins da "permission denied", revisa el GID con:
+      #   docker exec jenkins ls -ln /var/run/docker.sock
+      # y define DOCKER_GID con ese número antes de levantar.
+      - "${DOCKER_GID:-0}"
+    extra_hosts:
+      # Permite que el pipeline llegue al puerto publicado del backend (5000)
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  jenkins_home:
+    name: jenkins_home

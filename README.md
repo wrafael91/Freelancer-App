@@ -109,6 +109,36 @@ docker compose down -v                                    # apagar y borrar el v
 
 ## Integración continua
 
+### Jenkins (Entrega 2)
+
+```mermaid
+flowchart LR
+    D[Commit local] -- git push --> G[GitHub<br/>main]
+    J[Jenkins<br/>Poll SCM cada ~2 min] -- detecta cambio --> G
+    J --> C[Checkout] --> B["Build<br/>.env desde credenciales<br/>pull mongo + build backend"] --> T["Test<br/>compose up --wait<br/>prueba-comunicacion.sh"]
+    T --> P{"post"}
+    P -- éxito / fallo --> L[Historial y consola]
+    P -- cleanup --> X[compose down -v<br/>borra .env]
+```
+
+- `jenkins/` contiene el `Dockerfile` (base `jenkins/jenkins:lts` + cliente de Docker y Compose),
+  la lista de plugins y el compose que levanta Jenkins con el volumen `jenkins_home`
+  y el socket de Docker montado.
+- `Jenkinsfile` define el pipeline como código con las etapas **Checkout**, **Build** y **Test**
+  y un bloque `post`. Los secretos (`MONGO_USER`, `MONGO_PASSWORD`, `JWT_SECRET`) son
+  credenciales de Jenkins; el `.env` se genera en cada build y se borra al terminar.
+- El disparo es por **Poll SCM**: Jenkins corre en `localhost`, así que GitHub no puede
+  llamar a un webhook; Jenkins consulta el repositorio cada ~2 minutos.
+
+```bash
+docker compose down                                   # apaga el stack de desarrollo (usa los mismos nombres)
+docker compose -f jenkins/docker-compose.yml up -d --build
+# Contraseña inicial (en PowerShell; en Git Bash anteponer MSYS_NO_PATHCONV=1)
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+### GitHub Actions
+
 `.github/workflows/docker-ci.yml` se ejecuta en cada `push` y `pull request`:
 genera un `.env` temporal con claves aleatorias, construye la imagen del backend,
 levanta el compose esperando que ambos servicios estén `healthy` y ejecuta la

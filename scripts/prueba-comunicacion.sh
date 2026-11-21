@@ -10,7 +10,9 @@ set -euo pipefail
 # Carga variables del .env (MONGO_USER, MONGO_PASSWORD, MONGO_DB, BACKEND_PORT)
 set -a; [ -f .env ] && . ./.env; set +a
 
-API="http://localhost:${BACKEND_PORT:-5000}"
+# API_URL permite correr la prueba desde otro contenedor (Jenkins usa
+# http://host.docker.internal:5000). Sin API_URL se usa localhost, como en local y en GitHub Actions.
+API="${API_URL:-http://localhost:${BACKEND_PORT:-5000}}"
 EMAIL="prueba_$(date +%s)@freelancer.test"
 
 echo "== 1. Resolución DNS del nombre de servicio 'mongo' desde el backend =="
@@ -21,10 +23,12 @@ echo; echo "== 2. Health check =="
 curl -fsS "$API/api/health"; echo
 
 echo; echo "== 3. ESCRITURA: POST /api/auth/register ($EMAIL) =="
-TOKEN=$(curl -fsS -X POST "$API/api/auth/register" \
+REG=$(curl -fsS -X POST "$API/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d "{\"name\":\"Usuario Prueba\",\"email\":\"$EMAIL\",\"password\":\"secreto123\"}" \
-  | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).token))")
+  -d "{\"name\":\"Usuario Prueba\",\"email\":\"$EMAIL\",\"password\":\"secreto123\"}")
+# Se extrae el token con sed (no depende de Node ni jq en la máquina que corre la prueba)
+TOKEN=$(printf '%s' "$REG" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+[ -n "$TOKEN" ] || { echo "FALLO: el registro no devolvió token: $REG"; exit 1; }
 echo "Token recibido: ${TOKEN:0:25}..."
 
 echo; echo "== 4. LECTURA: GET /api/auth/user =="
