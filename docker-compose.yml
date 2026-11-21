@@ -8,7 +8,10 @@ name: freelancer-app
 
 services:
   mongo:
-    image: mongo:7.0.14
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    image: freelancer-app-mongo:1.0.0
     container_name: freelancer-mongo
     restart: unless-stopped
     environment:

@@ -31,6 +31,7 @@ pipeline {
     // el puerto publicado del backend se alcanza por host.docker.internal
     API_URL       = 'http://host.docker.internal:5000'
     IMAGE_BACKEND = 'freelancer-app-backend'
+    IMAGE_MONGO   = 'freelancer-app-mongo'
   }
 
   stages {
@@ -65,10 +66,10 @@ pipeline {
         }
         sh 'docker version --format "Docker cliente {{.Client.Version}} / motor {{.Server.Version}}"'
         sh 'docker compose config --quiet'          // valida el compose antes de construir
-        sh 'docker compose pull mongo'              // servicio 2: imagen oficial mongo:7.0.14
-        sh 'docker compose build backend'           // servicio 1: Dockerfile propio
+        sh 'docker compose build'                   // construye los dos servicios: backend y mongo
         sh 'docker tag ${IMAGE_BACKEND}:1.0.0 ${IMAGE_BACKEND}:build-${BUILD_NUMBER}'
-        sh 'docker image ls --filter reference=${IMAGE_BACKEND} --filter reference=mongo'
+        sh 'docker tag ${IMAGE_MONGO}:1.0.0 ${IMAGE_MONGO}:build-${BUILD_NUMBER}'
+        sh 'docker image ls --filter reference=${IMAGE_BACKEND} --filter reference=${IMAGE_MONGO}'
       }
     }
 
