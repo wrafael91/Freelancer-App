@@ -38,7 +38,7 @@ services:
     environment:
       PORT: 5000
       # "mongo" es el NOMBRE DEL SERVICIO: Docker lo resuelve por DNS en freelancer-net
-      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=admin
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/${MONGO_DB}?authSource=admin
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     ports:
